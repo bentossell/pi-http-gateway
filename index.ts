@@ -322,23 +322,39 @@ export default function (pi: ExtensionAPI) {
 		})
 	})
 
-	server.listen(PORT, '0.0.0.0')
+	let serverRunning = false
+
+	// Try to bind — if port taken, skip silently (another pi owns it)
+	server.on('error', (err: NodeJS.ErrnoException) => {
+		if (err.code === 'EADDRINUSE') {
+			// Another pi instance already has the gateway — that's fine
+			serverRunning = false
+		} else {
+			console.error('[gateway] server error:', err)
+		}
+	})
+
+	server.listen(PORT, '0.0.0.0', () => {
+		serverRunning = true
+	})
 
 	// --- Lifecycle ---
 
 	pi.on('session_start', async (_event, ctx) => {
 		extensionCtx = ctx
-		ctx.ui.setStatus('gateway', `⚡ :${PORT}`)
-		updateWidget()
+		if (serverRunning) {
+			ctx.ui.setStatus('gateway', `⚡ :${PORT}`)
+			updateWidget()
+		}
 	})
 
 	pi.on('agent_start', async (_event, ctx) => {
 		extensionCtx = ctx
-		updateWidget()
+		if (serverRunning) updateWidget()
 	})
 
 	pi.on('session_shutdown', async () => {
-		server.close()
+		if (serverRunning) server.close()
 	})
 
 	// --- /gateway command ---
