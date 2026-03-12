@@ -1,0 +1,16 @@
+{
+  "name": "pi-http-gateway",
+  "version": "0.1.0",
+  "description": "HTTP gateway extension for pi — accept prompts from anywhere",
+  "author": "Ben Tossell",
+  "license": "MIT",
+  "main": "index.ts",
+  "files": [
+    "index.ts"
+  ],
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
